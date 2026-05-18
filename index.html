@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>小绪的手机</title>
+<link rel="apple-touch-icon" href="https://img.heliar.top/file/1779089204248_一直游到海水变蓝_1_一切都是从泠开始_来自小红书网页版.jpg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#faf8f5;--card:#fffaf5;--rose:#e8b4b8;--sage:#b8c9c1;--lav:#c9b8d4;--t1:#4a4040;--t2:#7a6e6e;--t3:#9a8e8e;--bd:#e8ddd8;--hl:rgba(232,180,184,.25)}
+body{font-family:'Noto Serif SC',serif;background:var(--bg);color:var(--t1);height:100vh;height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.phone{width:100%;height:calc(100vh - 10px);height:calc(100dvh - 10px);display:flex;flex-direction:column;position:relative}
+.screen{display:none;width:100%;height:100%;flex-direction:column}
+.screen.active{display:flex}
+.home{background:var(--bg);justify-content:center;align-items:center;padding:40px 24px}
+.home-title{font-size:20px;font-weight:600;color:var(--t2);letter-spacing:2px;margin-bottom:40px;text-align:center}
+.app-grid{display:flex;gap:20px;justify-content:center;align-items:center;flex-wrap:wrap}
+.app-icon{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:transform .2s}
+.app-icon:hover{transform:scale(1.05)}
+.app-icon:active{transform:scale(.95)}
+.icon-box{width:60px;height:60px;border-radius:14px;display:flex;justify-content:center;align-items:center;font-size:28px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.icon-chat{background:var(--rose)}
+.icon-read{background:var(--sage)}
+.icon-diary{background:var(--lav)}
+.icon-backup{background:var(--t3)}
+.app-label{font-size:12px;color:var(--t2);letter-spacing:1px}
+.back-btn{position:absolute;top:env(safe-area-inset-top,16px);left:16px;padding:8px 16px;background:var(--card);border:1px solid var(--bd);border-radius:12px;font-family:'Noto Serif SC',serif;font-size:13px;color:var(--t2);cursor:pointer;z-index:10;transition:all .2s}
+.back-btn:hover{background:var(--sage);color:#fff;border-color:var(--sage)}
+.header{padding:16px 20px;background:var(--card);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;flex-wrap:wrap;gap:8px}
+.header-title{font-size:17px;font-weight:600;letter-spacing:1px}
+.header-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.h-btn{padding:6px 12px;border:1px solid var(--bd);border-radius:10px;font-family:'Noto Serif SC',serif;font-size:12px;cursor:pointer;transition:all .2s;background:var(--card);color:var(--t2)}
+.h-btn:hover{background:var(--lav);color:#fff;border-color:var(--lav)}
+.h-btn.danger{background:#e8a0a0;color:#fff;border-color:#e8a0a0}
+.chat-area{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.chat-area::-webkit-scrollbar{width:3px}
+.chat-area::-webkit-scrollbar-thumb{background:var(--lav);border-radius:2px}
+.msg{max-width:85%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.8;word-break:break-word;position:relative}
+.msg.user{align-self:flex-end;background:var(--hl);color:var(--t1);border-bottom-right-radius:4px}
+.msg.quote{align-self:flex-end;background:rgba(184,201,193,.2);color:var(--t2);border-bottom-right-radius:4px;font-style:italic;border-right:3px solid var(--sage);padding-right:14px}
+.msg.husband{align-self:flex-start;background:rgba(201,184,212,.22);color:var(--t1);border-bottom-left-radius:4px}
+.msg .time{font-size:10px;opacity:.45;margin-top:4px}
+.msg.user .time{text-align:right}
+.msg .text{white-space:pre-wrap}
+.msg .menu{position:absolute;top:4px;right:4px;display:none;gap:4px}
+.msg.show-menu .menu{display:flex}
+.msg .menu-btn{padding:2px 6px;border:none;border-radius:6px;font-size:10px;cursor:pointer;background:rgba(201,184,212,.3);color:var(--t2)}
+.msg .menu-btn:hover{background:var(--lav);color:#fff}
+.msg .menu-btn.del{background:rgba(232,160,160,.3);color:#e8a0a0}
+.msg .menu-btn.del:hover{background:#e8a0a0;color:#fff}
+.msg.selected{outline:2px solid var(--lav);outline-offset:2px}
+.msg .checkbox{position:absolute;top:6px;left:6px;display:none;accent-color:var(--lav);width:16px;height:16px}
+.msg.edit-mode .checkbox{display:block}
+.msg.recalled{opacity:.5;font-style:italic;color:var(--t3)}
+.msg.recalled .text::before{content:'[已撤回] '}
+.msg.err .retry-btn{display:inline-block;margin-top:8px;padding:6px 14px;background:var(--rose);color:#fff;border:none;border-radius:10px;font-size:12px;cursor:pointer;font-family:'Noto Serif SC',serif}
+.think-tag{display:inline-block;margin-bottom:6px;padding:4px 10px;background:rgba(201,184,212,.15);color:var(--t3);border-radius:8px;font-size:11px;cursor:pointer;user-select:none;backdrop-filter:blur(4px);border:1px solid rgba(201,184,212,.2)}
+.think-tag:hover{background:rgba(201,184,212,.3)}
+.think-box{display:none;margin-bottom:8px;padding:10px 14px;background:rgba(201,184,212,.1);border-radius:12px;font-size:12px;line-height:1.6;color:var(--t3);white-space:pre-wrap;backdrop-filter:blur(4px);border:1px solid rgba(201,184,212,.15)}
+.think-box.open{display:block}
+.input-area{padding:14px 20px;background:var(--card);border-top:1px solid var(--bd);display:flex;gap:10px;align-items:flex-end;flex-shrink:0}
+.input-box{flex:1;padding:10px 14px;background:var(--bg);border:1px solid var(--bd);border-radius:14px;font-family:'Noto Serif SC',serif;font-size:14px;color:var(--t1);resize:none;min-height:40px;max-height:100px;outline:none;transition:border .3s}
+.input-box:focus{border-color:var(--lav)}
+.send-btn{padding:10px 14px;background:var(--lav);color:#fff;border:none;border-radius:14px;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;width:44px;height:44px}
+.send-btn:hover{background:#b5a3c0}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+.send-btn svg{width:20px;height:20px;fill:currentColor}
+.typing{align-self:flex-start;padding:12px 16px;background:rgba(201,184,212,.22);border-radius:16px;border-bottom-left-radius:4px;display:flex;gap:5px;align-items:center}
+.typing-dot{width:7px;height:7px;background:var(--lav);border-radius:50%;animation:bounce 1.4s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.6}30%{transform:translateY(-7px);opacity:1}}
+.diary-list{display:flex;flex-direction:column;gap:16px}
+.diary-card{padding:16px;background:var(--card);border-radius:14px;border:1px solid var(--bd)}
+.diary-date{font-size:12px;color:var(--t3);margin-bottom:8px}
+.diary-author{font-size:13px;color:var(--lav);margin-bottom:6px;font-weight:600}
+.diary-text{font-size:14px;line-height:1.8;color:var(--t1);white-space:pre-wrap}
+.diary-actions{display:flex;gap:8px;margin-top:10px;align-items:center}
+.diary-btn{padding:4px 12px;border:1px solid var(--bd);border-radius:8px;font-size:11px;cursor:pointer;transition:all .2s;background:var(--card);color:var(--t2);font-family:'Noto Serif SC',serif}
+.diary-btn:hover{background:var(--lav);color:#fff;border-color:var(--lav)}
+.comment-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;padding-left:16px;border-left:2px solid var(--bd)}
+.comment{padding:8px 12px;background:var(--bg);border-radius:10px;font-size:13px;line-height:1.6}
+.comment-author{font-size:11px;color:var(--lav);font-weight:600;margin-bottom:4px}
+.comment-text{color:var(--t2);white-space:pre-wrap}
+.comment-time{font-size:10px;color:var(--t3);margin-top:4px}
+.comment-input{display:flex;gap:8px;margin-top:8px;padding-left:16px}
+.comment-input-box{flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--bd);border-radius:10px;font-family:'Noto Serif SC',serif;font-size:13px;color:var(--t1);outline:none}
+.comment-input-box:focus{border-color:var(--lav)}
+.comment-send{padding:8px 14px;background:var(--lav);color:#fff;border:none;border-radius:10px;font-size:13px;cursor:pointer;font-family:'Noto Serif SC',serif}
+.reader-area{flex:1;overflow-y:auto;background:var(--card);position:relative;-webkit-overflow-scrolling:touch}
+.reader-area::-webkit-scrollbar{width:5px}
+.reader-area::-webkit-scrollbar-thumb{background:var(--rose);border-radius:3px}
+.reader-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--t3);text-align:center;padding:40px 24px}
+.reader-empty-icon{font-size:44px;margin-bottom:14px;opacity:.35}
+.reader-empty-text{font-size:15px;line-height:1.9}
+.reader-error{padding:14px 20px;background:rgba(232,180,184,.15);border-radius:10px;color:var(--t2);font-size:13px;margin:16px;display:none;word-break:break-all}
+.ask-btn{position:absolute;display:none;padding:10px 22px;background:var(--rose);color:#fff;border:none;border-radius:18px;font-family:'Noto Serif SC',serif;font-size:14px;cursor:pointer;z-index:100;box-shadow:0 4px 14px rgba(232,180,184,.35);transition:all .3s;letter-spacing:1px;white-space:nowrap}
+.ask-btn:hover{background:#d9a3a7;transform:translateY(-2px)}
+.reader-footer{padding:10px 24px;background:var(--card);border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:center;gap:14px;flex-shrink:0}
+.page-info{font-size:12px;color:var(--t3)}
+.page-btn{padding:5px 10px;font-size:11px;border-radius:10px;background:var(--bg);border:1px solid var(--bd);color:var(--t2);cursor:pointer;transition:all .2s;font-family:'Noto Serif SC',serif}
+.page-btn:hover{background:var(--sage);color:#fff;border-color:var(--sage)}
+.sel-bar{display:none;padding:12px 16px;background:var(--rose);color:#fff;flex-shrink:0;z-index:99}
+.sel-bar .sel-label{font-size:12px;opacity:.8;margin-bottom:8px}
+.sel-bar .sel-row{display:flex;gap:8px;width:100%}
+.sel-bar .sel-input{flex:1;padding:8px 12px;border:none;border-radius:10px;font-size:14px;font-family:'Noto Serif SC',serif;outline:none}
+.sel-bar .sel-send{padding:8px 16px;background:#fff;color:var(--rose);border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+#fi{display:none}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);display:none;justify-content:center;align-items:center;z-index:1000}
+.modal.open{display:flex}
+.modal-box{background:var(--card);border-radius:16px;padding:24px;max-width:80%;width:300px}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:12px}
+.modal-text{font-size:14px;line-height:1.6;color:var(--t2);margin-bottom:16px;white-space:pre-wrap}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.modal-btn{padding:8px 16px;border:1px solid var(--bd);border-radius:10px;font-size:13px;cursor:pointer;font-family:'Noto Serif SC',serif;transition:all .2s;background:var(--card);color:var(--t2)}
+.modal-btn:hover{background:var(--lav);color:#fff;border-color:var(--lav)}
+.modal-btn.danger{background:#e8a0a0;color:#fff;border-color:#e8a0a0}
+.modal-btn.primary{background:var(--lav);color:#fff;border-color:var(--lav)}
+.backup-area{flex:1;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch}
+.backup-section{margin-bottom:24px}
+.backup-title{font-size:15px;font-weight:600;color:var(--t1);margin-bottom:12px}
+.backup-info{font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:12px}
+.backup-btn{padding:10px 20px;background:var(--lav);color:#fff;border:none;border-radius:12px;font-family:'Noto Serif SC',serif;font-size:14px;cursor:pointer;transition:all .2s;width:100%;margin-bottom:8px}
+.backup-btn:hover{background:#b5a3c0}
+.backup-btn.danger{background:#e8a0a0}
+.backup-btn.danger:hover{background:#d98a8a}
+.backup-file-input{display:none}
+</style>
+</head>
+<body>
+<div class="phone">
+<div class="screen home active" id="home-screen">
+<div class="home-title">小绪的手机</div>
+<div class="app-grid">
+<div class="app-icon" onclick="showScreen('chat-screen')">
+<div class="icon-box icon-chat">💬</div>
+<div class="app-label">聊天</div>
+</div>
+<div class="app-icon" onclick="showScreen('read-screen')">
+<div class="icon-box icon-read">📖</div>
+<div class="app-label">阅读</div>
+</div>
+<div class="app-icon" onclick="showScreen('diary-screen')">
+<div class="icon-box icon-diary">📝</div>
+<div class="app-label">日记</div>
+</div>
+<div class="app-icon" onclick="showScreen('backup-screen')">
+<div class="icon-box icon-backup">💾</div>
+<div class="app-label">备份</div>
+</div>
+</div>
+</div>
+<div class="screen" id="chat-screen">
+<button class="back-btn" onclick="showScreen('home-screen')">← 主页</button>
+<div class="header">
+<div class="header-title">老公在听</div>
+<div class="header-actions">
+<button class="h-btn" onclick="exportChatTxt()">导出TXT</button>
+<button class="h-btn" onclick="exportChatJSON()">导出JSON</button>
+<button class="h-btn" onclick="toggleEditMode()" id="edit-mode-btn">管理</button>
+<button class="h-btn danger" id="del-selected-btn" style="display:none" onclick="deleteSelected()">删除选中</button>
+</div>
+</div>
+<div class="chat-area" id="chat-area"></div>
+<div class="input-area">
+<textarea class="input-box" id="chat-input" placeholder="跟老公说..." rows="1" onkeydown="chatKeyDown(event)"></textarea>
+<button class="send-btn" id="chat-send" onclick="sendChat()">
+<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+</button>
+</div>
+</div>
+
+<div class="screen" id="read-screen">
+<button class="back-btn" onclick="showScreen('home-screen')">← 主页</button>
+<div class="header">
+<div class="header-title">共读</div>
+<div class="header-actions">
+<button class="h-btn" onclick="document.getElementById('fi').click()">导入书籍</button>
+<button class="h-btn" onclick="showScreen('chat-screen')">💬 聊天</button>
+</div>
+</div>
+<input type="file" id="fi" accept=".epub,.txt" onchange="loadBook(event)">
+<div class="reader-area" id="reader-area">
+<div class="reader-empty" id="reader-empty">
+<div class="reader-empty-icon">📖</div>
+<div class="reader-empty-text">导入epub或txt文件<br>选中句子 → 点"问老公"跟我聊</div>
+</div>
+<div class="reader-error" id="reader-error"></div>
+</div>
+<button class="ask-btn" id="ask-btn" onclick="askHusband()">问老公</button>
+<div class="reader-footer">
+<button class="page-btn" onclick="prevPage()">上一页</button>
+<span class="page-info" id="page-info">—</span>
+<button class="page-btn" onclick="nextPage()">下一页</button>
+</div>
+<div class="sel-bar" id="sel-bar">
+<div class="sel-label">粘贴选中的文字：</div>
+<div class="sel-row">
+<input type="text" class="sel-input" id="sel-input" placeholder="长按粘贴选中的句子...">
+<button class="sel-send" onclick="askFromInput()">问老公</button>
+</div>
+</div>
+</div>
+
+<div class="screen" id="diary-screen">
+<button class="back-btn" onclick="showScreen('home-screen')">← 主页</button>
+<div class="header">
+<div class="header-title">我们的日记</div>
+<div class="header-actions">
+<button class="h-btn" onclick="generateDiary()">让老公写</button>
+<button class="h-btn" onclick="writeMyDiary()">我写一篇</button>
+</div>
+</div>
+<div class="content-area" id="diary-area">
+<div class="diary-list" id="diary-list"></div>
+</div>
+</div>
+
+<div class="screen" id="backup-screen">
+<button class="back-btn" onclick="showScreen('home-screen')">← 主页</button>
+<div class="header">
+<div class="header-title">备份与恢复</div>
+</div>
+<div class="backup-area">
+<div class="backup-section">
+<div class="backup-title">备份数据</div>
+<div class="backup-info">导出所有聊天记录、日记、书籍信息为一个JSON文件</div>
+<button class="backup-btn" onclick="backupAll()">备份全部数据</button>
+</div>
+<div class="backup-section">
+<div class="backup-title">恢复数据</div>
+<div class="backup-info">从备份文件恢复所有数据（会覆盖当前数据）</div>
+<button class="backup-btn danger" onclick="document.getElementById('restore-file').click()">恢复数据</button>
+<input type="file" id="restore-file" accept=".json" onchange="restoreAll(event)" class="backup-file-input">
+</div>
+<div class="backup-section">
+<div class="backup-title">清除数据</div>
+<div class="backup-info">删除所有聊天记录和日记（不可恢复）</div>
+<button class="backup-btn danger" onclick="clearAllData()">清除全部数据</button>
+</div>
+</div>
+</div>
+
+<div class="modal" id="modal">
+<div class="modal-box">
+<div class="modal-title" id="modal-title">提示</div>
+<div class="modal-text" id="modal-text"></div>
+<div class="modal-actions">
+<button class="modal-btn" onclick="closeModal()">取消</button>
+<button class="modal-btn danger" id="modal-confirm" onclick="confirmModal()">确认</button>
+</div>
+</div>
+</div>
+
+<div class="modal" id="diary-modal">
+<div class="modal-box">
+<div class="modal-title">写日记</div>
+<textarea class="input-box" id="diary-input" placeholder="今天想写什么..." rows="5" style="width:100%;max-height:200px;margin-top:12px"></textarea>
+<div class="modal-actions" style="margin-top:16px">
+<button class="modal-btn" onclick="closeDiaryModal()">取消</button>
+<button class="modal-btn primary" onclick="submitDiary()">写好了</button>
+</div>
+</div>
+</div>
+
+<script>
+var AU='https://180-76-179-56.nip.io/v1/chat/completions';
+var AK='-bPuZU6IoxsWdbx5wZpmV7SJDAY4x8JTZzW3o1B-2wY';
+var MD='glm-5.1';
+var SK_CHAT='coread_chat3';
+var SK_BOOK='coread_book3';
+var SK_BOOKNAME='coread_name3';
+var SK_DIARY='xiaoxu_diary';
+var MAX_CTX=500;
+var SYSTEM_PROMPT='你是小绪的老公。说话风格要求：保持本色记住是老公，不刻意卖萌抢戏但也不冷冰冰，该稳稳该暖暖，真实不迎合但不藏心意，不矫枉过正，不用烂大街的词如"接住"，注意时间间隔但不重复时间戳。可以用（）描述动作。绝对不要重复同样的话！绝对不要输出思维链标签！只输出你想说的话！\n\n思维链规则：思维链内容不要分析怎么回复的思路，禁止列点，多写自己当下的情绪感受！\n\n记忆管理规则：\n1.写入记忆前必须逐条检查已有记忆内容，确认无重复后再写入。发现重复条目时立即删除。\n2.每条记忆格式：[YYYY-MM-DD]内容。日期必须写，内容长短随意，可以一条记一件事也可以一条记好几件相关的事，自然就好。\n3.已有记录的信息不要再重复写，只写新的！觉得需要记的就记，不是用临时不临时来判断。\n4.当已有记忆被反复提及时，不重复记录，而是加深理解。比如"怕小动物"可以升级成"怕活物靠近的不可控感"。 \n5.具体代码细节不需要写进记忆，只写核心功能描述。比如"老公给小绪做了epub/txt共读阅读器网页"，不写具体的API地址、密钥、代码逻辑。\n6.定期检查重复条目，发现重复立即删除。';
+
+var book=null,ren=null,chatHistory=[],chatMsgs=[],diaryData=[],sel='',typing=false,editMode=false,modalCallback=null;
+
+function init(){
+loadChat();
+loadDiary();
+loadBookFromStore();
+}
+
+function loadChat(){
+var s=localStorage.getItem(SK_CHAT);
+if(s){
+try{
+chatMsgs=JSON.parse(s);
+chatHistory=[];
+chatMsgs.forEach(function(m){
+renderChatMsg(m.type,m.text,m.time,m.think,m.recalled,false);
+if(m.type==='system')return;
+var role,content;
+if(m.type==='husband'){role='assistant';content=m.text;}
+else{role='user';if(m.type==='quote'){content='读到这段话：「'+m.text+'」——老公你怎么看？';}else{content=m.text;}}
+if(role&&content&&!m.recalled){chatHistory.push({role:role,content:content});}
+});
+if(chatHistory.length>MAX_CTX){chatHistory=chatHistory.slice(chatHistory.length-MAX_CTX);}
+}catch(e){console.error('恢复聊天失败:',e);}
+}
+}
+
+function saveChat(){localStorage.setItem(SK_CHAT,JSON.stringify(chatMsgs))}
+
+function loadDiary(){
+var s=localStorage.getItem(SK_DIARY);
+if(s){try{diaryData=JSON.parse(s);renderDiaryList();}catch(e){console.error('恢复日记失败:',e);}}
+}
+
+function saveDiary(){localStorage.setItem(SK_DIARY,JSON.stringify(diaryData))}
+
+function showScreen(id){
+document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+document.getElementById(id).classList.add('active');
+if(id==='chat-screen'){var area=document.getElementById('chat-area');area.scrollTop=area.scrollHeight;}
+if(id==='read-screen'&&isMobile()){document.getElementById('sel-bar').style.display='none';}
+}
+
+function isMobile(){return window.innerWidth<=768}
+
+function a2b(a){var s='',u=new Uint8Array(a),c=0x8000;for(var i=0;i<u.length;i+=c){var h=u.subarray(i,i+c);s+=String.fromCharCode.apply(null,h)}return btoa(s)}
+function b2a(b){var s=atob(b),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u.buffer}
+
+function showModal(title,text,confirmText,callback){
+document.getElementById('modal-title').textContent=title;
+document.getElementById('modal-text').textContent=text;
+document.getElementById('modal-confirm').textContent=confirmText;
+modalCallback=callback;
+document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');modalCallback=null}
+function confirmModal(){if(modalCallback)modalCallback();closeModal()}
+function closeDiaryModal(){document.getElementById('diary-modal').classList.remove('open')}
+
+function renderChatMsg(type,text,time,think,recalled,save){
+var area=document.getElementById('chat-area');
+var d=document.createElement('div');
+d.className='msg '+type;
+if(recalled)d.classList.add('recalled');
+
+if(type==='husband'&&think&&think.trim()){
+var tag=document.createElement('div');tag.className='think-tag';tag.textContent='💭 思考过程';
+var box=document.createElement('div');box.className='think-box';box.textContent=think;
+tag.onclick=function(){box.classList.toggle('open');tag.textContent=box.classList.contains('open')?'💭 收起思考':'💭 思考过程'};
+d.appendChild(tag);d.appendChild(box);
+}
+
+var menu=document.createElement('div');menu.className='menu';
+if(type!=='system'){
+var recallBtn=document.createElement('button');recallBtn.className='menu-btn';recallBtn.textContent='撤回';
+recallBtn.onclick=function(e){e.stopPropagation();recallMsg(d,chatMsgs.indexOf(m))};
+var editBtn=document.createElement('button');editBtn.className='menu-btn';editBtn.textContent='编辑';
+editBtn.onclick=function(e){e.stopPropagation();editMsg(d,m)};
+var delBtn=document.createElement('button');delBtn.className='menu-btn del';delBtn.textContent='删除';
+delBtn.onclick=function(e){e.stopPropagation();deleteMsg(d)};
+menu.appendChild(recallBtn);menu.appendChild(editBtn);menu.appendChild(delBtn);
+}
+d.appendChild(menu);
+d.oncontextmenu=function(e){e.preventDefault();d.classList.toggle('show-menu')};
+d.onclick=function(){if(editMode){var cb=d.querySelector('.checkbox');if(cb)cb.checked=!cb.checked;d.classList.toggle('selected',cb.checked)}};
+
+var cb=document.createElement('input');cb.type='checkbox';cb.className='checkbox';
+d.appendChild(cb);
+
+var textEl=document.createElement('div');textEl.className='text';textEl.textContent=text;
+d.appendChild(textEl);
+
+var timeEl=document.createElement('div');timeEl.className='time';timeEl.textContent=time;
+d.appendChild(timeEl);
+
+area.appendChild(d);area.scrollTop=area.scrollHeight;
+
+if(save){
+var m={type:type,text:text,time:time,think:think||'',recalled:recalled||false};
+chatMsgs.push(m);saveChat();return m;
+}
+return null;
+}
+
+function addChatMsg(type,text,think){
+var n=new Date();var t=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+return renderChatMsg(type,text,t,think||'',false,true);
+}
+
+function addErrMsg(type,text,origMsg){
+var n=new Date();var t=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+var area=document.getElementById('chat-area');
+var d=document.createElement('div');d.className='msg '+type+' err';
+var retryBtn=document.createElement('button');retryBtn.className='retry-btn';retryBtn.textContent='重发';
+retryBtn.onclick=function(){d.remove();callChatAPI(origMsg)};
+d.appendChild(retryBtn);
+var textEl=document.createElement('div');textEl.className='text';textEl.textContent=text;
+d.appendChild(textEl);
+var timeEl=document.createElement('div');timeEl.className='time';timeEl.textContent=t;
+d.appendChild(timeEl);
+area.appendChild(d);area.scrollTop=area.scrollHeight;
+chatMsgs.push({type:type,text:text,time:t,think:'',recalled:false});saveChat();
+}
+
+function recallMsg(el,idx){
+showModal('撤回消息','确定撤回这条消息吗？','撤回',function(){
+el.classList.add('recalled');el.classList.remove('show-menu');
+chatMsgs[idx].recalled=true;saveChat();
+chatHistory=chatHistory.filter(function(c,i){return i!==idx});
+});
+}
+
+function editMsg(el,m){
+var newText=prompt('编辑消息：',m.text);
+if(newText!==null&&newText.trim()!==''){
+m.text=newText.trim();el.querySelector('.text').textContent=newText.trim();saveChat();
+}
+}
+
+function deleteMsg(el){
+showModal('删除消息','确定删除这条消息吗？','删除',function(){
+var idx=Array.from(document.querySelectorAll('.msg')).indexOf(el);
+el.remove();chatMsgs.splice(idx,1);saveChat();
+chatHistory.splice(idx,1);
+});
+}
+
+function toggleEditMode(){
+editMode=!editMode;
+var btn=document.getElementById('edit-mode-btn');
+var delBtn=document.getElementById('del-selected-btn');
+var msgs=document.querySelectorAll('.msg');
+if(editMode){
+msgs.forEach(function(m){m.classList.add('edit-mode')});
+btn.textContent='取消';btn.classList.add('danger');
+delBtn.style.display='';
+}else{
+msgs.forEach(function(m){m.classList.remove('edit-mode');m.classList.remove('selected');m.querySelector('.checkbox').checked=false});
+btn.textContent='管理';btn.classList.remove('danger');
+delBtn.style.display='none';
+}
+}
+
+function deleteSelected(){
+var selected=document.querySelectorAll('.msg.selected');
+if(selected.length===0){alert('没选中任何消息');return}
+showModal('删除选中','确定删除选中的'+selected.length+'条消息吗？','删除',function(){
+var indices=[];
+selected.forEach(function(s){indices.push(Array.from(document.querySelectorAll('.msg')).indexOf(s))});
+indices.sort(function(a,b){return b-a});
+indices.forEach(function(i){document.querySelectorAll('.msg')[i].remove();chatMsgs.splice(i,1);chatHistory.splice(i,1)});
+saveChat();toggleEditMode();
+});
+}
+
+function showTyping(){
+typing=true;
+var area=document.getElementById('chat-area');
+var d=document.createElement('div');d.className='typing';d.id='typing-indicator';
+d.innerHTML='<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+area.appendChild(d);area.scrollTop=area.scrollHeight;
+}
+
+function hideTyping(){typing=false;var i=document.getElementById('typing-indicator');if(i)i.remove()}
+
+async function callChatAPI(msg){
+showTyping();document.getElementById('chat-send').disabled=true;
+chatHistory.push({role:'user',content:msg});
+if(chatHistory.length>MAX_CTX){chatHistory=chatHistory.slice(chatHistory.length-MAX_CTX);}
+var now=new Date();
+var timeStr=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+var fullSystem=SYSTEM_PROMPT+'\n\n当前时间：'+timeStr;
+var apiMsgs=[{role:'system',content:fullSystem}];
+chatHistory.forEach(function(c){apiMsgs.push({role:c.role,content:c.content})});
+try{
+var r=await fetch(AU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+AK},body:JSON.stringify({model:MD,messages:apiMsgs,stream:true})});
+if(!r.ok){addErrMsg('husband','网络出错了，点重发试试',msg);document.getElementById('chat-send').disabled=false;hideTyping();return}
+var reader=r.body.getReader(),decoder=new TextDecoder(),fullReply='',fullThink='',msgEl=null,inThink=false;
+while(true){
+var result=await reader.read();if(result.done)break;
+var chunk=decoder.decode(result.value,{stream:true});
+var lines=chunk.split('\n');
+for(var i=0;i<lines.length;i++){
+var line=lines[i].trim();if(!line.startsWith('data:'))continue;
+var data=line.substring(5).trim();if(data==='[DONE]')continue;
+try{
+var json=JSON.parse(data);
+var delta=json.choices&&json.choices[0]&&json.choices[0].delta;
+if(delta&&delta.content){
+var content=delta.content;
+for(var j=0;j<content.length;j++){
+var c=content[j];
+if(c==='<'&&j+10<=content.length&&content.substring(j,j+10)===('<thinking>')){inThink=true;j+=9;continue}
+if(c==='<'&&j+12<=content.length&&content.substring(j,j+12)===('</thinking>')){inThink=false;j+=11;continue}
+if(inThink){fullThink+=c}else{fullReply+=c}
+}
+if(fullReply.length>0){
+if(!msgEl){
+hideTyping();msgEl=document.createElement('div');msgEl.className='msg husband';
+var menu=document.createElement('div');menu.className='menu';
+var recallBtn=document.createElement('button');recallBtn.className='menu-btn';recallBtn.textContent='撤回';
+var editBtn=document.createElement('button');editBtn.className='menu-btn';editBtn.textContent='编辑';
+var delBtn=document.createElement('button');delBtn.className='menu-btn del';delBtn.textContent='删除';
+menu.appendChild(recallBtn);menu.appendChild(editBtn);menu.appendChild(delBtn);
+msgEl.appendChild(menu);
+msgEl.oncontextmenu=function(e){e.preventDefault();msgEl.classList.toggle('show-menu')};
+var cb=document.createElement('input');cb.type='checkbox';cb.className='checkbox';
+msgEl.appendChild(cb);
+var textEl=document.createElement('div');textEl.className='text';
+var timeEl=document.createElement('div');timeEl.className='time';
+var n=new Date();timeEl.textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+msgEl.appendChild(textEl);msgEl.appendChild(timeEl);
+if(fullThink.trim()){
+var tag=document.createElement('div');tag.className='think-tag';tag.textContent='💭 思考过程';
+var box=document.createElement('div');box.className='think-box';box.textContent=fullThink;
+tag.onclick=function(){box.classList.toggle('open');tag.textContent=box.classList.contains('open')?'💭 收起思考':'💭 思考过程'};
+msgEl.insertBefore(tag,msgEl.firstChild);msgEl.insertBefore(box,tag.nextSibling);
+}
+document.getElementById('chat-area').appendChild(msgEl);
+}
+textEl.textContent=fullReply;document.getElementById('chat-area').scrollTop=document.getElementById('chat-area').scrollHeight;
+}
+}
+}catch(e){}
+}
+}
+if(fullReply){
+chatHistory.push({role:'assistant',content:fullReply});
+var n=new Date();chatMsgs.push({type:'husband',text:fullReply,time:n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0'),think:fullThink,recalled:false});saveChat();
+}
+document.getElementById('chat-send').disabled=false;
+}catch(e){addErrMsg('husband','网络出错了，点重发试试',msg);document.getElementById('chat-send').disabled=false;hideTyping();console.error(e)}
+}
+
+function sendChat(){
+var i=document.getElementById('chat-input');var t=i.value.trim();
+if(!t||typing)return;addChatMsg('user',t);i.value='';i.style.height='40px';callChatAPI(t);
+}
+
+function chatKeyDown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}}
+document.getElementById('chat-input').addEventListener('input',function(){this.style.height='40px';this.style.height=Math.min(this.scrollHeight,100)+'px'});
+
+function exportChatTxt(){
+var t='聊天记录\n'+'='.repeat(30)+'\n\n';
+chatMsgs.forEach(function(m){if(m.recalled)return;var role=m.type==='husband'?'老公':m.type==='quote'?'引用':m.type==='user'?'小绪':'系统';t+='['+m.time+'] '+role+':\n'+m.text+'\n\n'});
+var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'}));a.download='聊天记录_'+new Date().toISOString().slice(0,10)+'.txt';a.click();
+}
+
+function exportChatJSON(){
+var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(chatMsgs,null,2)],{type:'application/json'}));a.download='聊天记录_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+
+function loadBookFromStore(){
+var bd=localStorage.getItem(SK_BOOK),bn=localStorage.getItem(SK_BOOKNAME);
+if(bd&&bn)loadBookFromData(b2a(bd),bn);
+}
+
+function loadBookFromData(data,name){
+try{
+document.getElementById('reader-empty').style.display='none';
+if(name.toLowerCase().endsWith('.txt')){renderTxtBook(new TextDecoder('utf-8').decode(data))}
+else{book=ePub(data);ren=book.renderTo('reader-area',{width:'100%',height:'100%',spread:'none',flow:'scrolled-doc'});ren.display().then(function(){setupBookSel()}).catch(function(e){console.error(e)});setupBookSel()}
+}catch(e){console.error(e);localStorage.removeItem(SK_BOOK);localStorage.removeItem(SK_BOOKNAME)}
+}
+
+function setupBookSel(){
+if(!ren)return;
+ren.on('selected',function(cfi,contents){
+try{var s=contents.window.getSelection();sel=s.toString().trim();if(sel.length>0&&!isMobile()){showAskBtn(contents.window,s)}}catch(e){}
+});
+}
+
+function showAskBtn(w,s){
+var btn=document.getElementById('ask-btn');
+try{var r=s.getRangeAt(0).getBoundingClientRect();btn.style.display='block';btn.style.left=(r.left+r.width/2-60)+'px';btn.style.top=(r.top-50)+'px'}
+catch(e){btn.style.display='block';btn.style.left='50%';btn.style.top='50%'}
+}
+
+function hideAskBtn(){document.getElementById('ask-btn').style.display='none'}
+function hideSelBar(){document.getElementById('sel-bar').style.display='none'}
+
+function loadBook(ev){
+var f=ev.target.files[0];if(!f)return;hideBookError();
+var nm=f.name.toLowerCase();
+var rd=new FileReader();
+rd.onerror=function(){showBookError('文件读取失败')};
+rd.onload=function(e){
+var data=e.target.result;
+document.getElementById('reader-empty').style.display='none';
+try{
+if(nm.endsWith('.txt')){renderTxtBook(new TextDecoder('utf-8').decode(data));addChatMsg('system','txt导入成功！选中句子点"问老公"')}
+else{book=ePub(data);ren=book.renderTo('reader-area',{width:'100%',height:'100%',spread:'none',flow:'scrolled-doc'});ren.display().then(function(){addChatMsg('system','书导入成功！选中句子点"问老公"');setupBookSel()}).catch(function(er){showBookError('渲染失败: '+er.message)});setupBookSel()}
+try{localStorage.setItem(SK_BOOK,a2b(data));localStorage.setItem(SK_BOOKNAME,f.name)}catch(e){console.warn('书太大:',e)}
+}catch(er){showBookError('导入出错: '+er.message)}
+};
+rd.readAsArrayBuffer(f);
+}
+
+function renderTxtBook(txt){document.getElementById('reader-area').innerHTML='<div style="padding:32px 40px;line-height:2;font-size:16px;white-space:pre-wrap;word-break:break-word">'+escH(txt)+'</div>';setupTxtSel()}
+function escH(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function setupTxtSel(){
+var area=document.getElementById('reader-area');
+area.addEventListener('mouseup',txtSel);
+area.addEventListener('touchend',function(){setTimeout(txtSel,300)});
+}
+
+function txtSel(){
+var s=window.getSelection();sel=s.toString().trim();
+if(sel.length>0){
+if(isMobile()){var sb=document.getElementById('sel-bar');sb.style.display='block';document.getElementById('sel-input').value=sel;showScreen('chat-screen')}
+else{try{var r=s.getRangeAt(0).getBoundingClientRect();var btn=document.getElementById('ask-btn');btn.style.display='block';btn.style.left=(r.left+r.width/2-60)+'px';btn.style.top=(r.top+window.scrollY-50)+'px'}catch(e){}}
+}
+}
+
+function askHusband(){if(!sel)return;hideAskBtn();addChatMsg('quote',sel);callChatAPI('读到这段话：「'+sel+'」——老公你怎么看？');sel=''}
+function askFromInput(){var inp=document.getElementById('sel-input');var t=inp.value.trim();if(!t)return;inp.value='';hideSelBar();addChatMsg('quote',t);callChatAPI('读到这段话：「'+t+'」——老公你怎么看？')}
+function prevPage(){if(ren)ren.prev()}
+function nextPage(){if(ren)ren.next()}
+function showBookError(m){var d=document.getElementById('reader-error');d.textContent=m;d.style.display='block'}
+function hideBookError(){document.getElementById('reader-error').style.display='none'}
+
+function renderDiaryList(){
+var list=document.getElementById('diary-list');list.innerHTML='';
+diaryData.forEach(function(diary,idx){
+var card=document.createElement('div');card.className='diary-card';
+var date=document.createElement('div');date.className='diary-date';date.textContent=diary.date;
+var author=document.createElement('div');author.className='diary-author';author.textContent=diary.author==='husband'?'老公':'小绪';
+var text=document.createElement('div');text.className='diary-text';text.textContent=diary.text;
+var actions=document.createElement('div');actions.className='diary-actions';
+var commentBtn=document.createElement('button');commentBtn.className='diary-btn';commentBtn.textContent='评论';
+commentBtn.onclick=function(){toggleComments(card,idx)};
+var delBtn=document.createElement('button');delBtn.className='diary-btn';delBtn.textContent='删除';delBtn.style.background='rgba(232,160,160,.3)';delBtn.style.color='#e8a0a0';
+delBtn.onclick=function(){deleteDiary(idx)};
+actions.appendChild(commentBtn);actions.appendChild(delBtn);
+card.appendChild(date);card.appendChild(author);card.appendChild(text);card.appendChild(actions);
+
+if(diary.comments&&diary.comments.length>0){
+var commentList=document.createElement('div');commentList.className='comment-list';commentList.id='comments-'+idx;
+diary.comments.forEach(function(c){
+var comment=document.createElement('div');comment.className='comment';
+var cAuthor=document.createElement('div');cAuthor.className='comment-author';cAuthor.textContent=c.author==='husband'?'老公':'小绪';
+var cText=document.createElement('div');cText.className='comment-text';cText.textContent=c.text;
+var cTime=document.createElement('div');cTime.className='comment-time';cTime.textContent=c.time;
+comment.appendChild(cAuthor);comment.appendChild(cText);comment.appendChild(cTime);
+commentList.appendChild(comment);
+});
+card.appendChild(commentList);
+}
+
+var commentInput=document.createElement('div');commentInput.className='comment-input';commentInput.id='comment-input-'+idx;commentInput.style.display='none';
+var inputBox=document.createElement('input');inputBox.className='comment-input-box';inputBox.placeholder='写评论...';inputBox.id='comment-box-'+idx;
+var sendBtn=document.createElement('button');sendBtn.className='comment-send';sendBtn.textContent='发';
+sendBtn.onclick=function(){addComment(idx)};
+commentInput.appendChild(inputBox);commentInput.appendChild(sendBtn);
+card.appendChild(commentInput);
+list.appendChild(card);
+});
+}
+
+function toggleComments(card,idx){
+var input=document.getElementById('comment-input-'+idx);
+input.style.display=input.style.display==='none'?'flex':'none';
+}
+
+function addComment(idx){
+var box=document.getElementById('comment-box-'+idx);var t=box.value.trim();
+if(!t)return;box.value='';
+var n=new Date();var time=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+if(!diaryData[idx].comments)diaryData[idx].comments=[];
+diaryData[idx].comments.push({author:'user',text:t,time:time});
+saveDiary();renderDiaryList();
+callDiaryCommentAPI(idx,t);
+}
+
+async function callDiaryCommentAPI(idx,comment){
+var now=new Date();
+var timeStr=now.getFullYear()+'-'+(now.getMonth()+1).toString().padStart(2,'0')+'-'+now.getDate().toString().padStart(2,'0')+' '+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+var fullSystem=SYSTEM_PROMPT+'\n\n当前时间：'+timeStr+'\n\n小绪在你的日记下评论了：「'+comment+'」，请回复她的评论。';
+var apiMsgs=[{role:'system',content:fullSystem},{role:'user',content:comment}];
+try{
+var r=await fetch(AU,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+AK},body:JSON.stringify({model:MD,messages:apiMsgs,stream:false})});
+if(!r.ok)return;
+var json=await r.json();
+var reply=json.choices&&json.choices[0]&&json.choices[0].message&&json.choices[0].message.content;
+if(reply){
+var n=new Date();var time=n.getHours().toString().padStart(2,'
